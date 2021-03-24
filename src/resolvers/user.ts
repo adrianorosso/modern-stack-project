@@ -61,8 +61,20 @@ export class UserResolver {
       username: username,
       password: hashedPassword,
     });
-
-    await em.persistAndFlush(user);
+    try {
+      await em.persistAndFlush(user);
+    } catch (err) {
+      if (err.code == "23505") {
+        return {
+          errors: [
+            {
+              field: "username",
+              message: "username is already in use.",
+            },
+          ],
+        };
+      }
+    }
 
     return { user };
   }
