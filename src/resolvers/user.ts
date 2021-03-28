@@ -109,20 +109,31 @@ export class UserResolver {
     @Arg("options") options: UsernameAndPassword,
     @Ctx() { em, req }: MyContext
   ): Promise<UserResponse> {
-    const errorMsg = {
-      errors: [
-        {
-          field: "username/password",
-          message: "invalid username or passoword",
-        },
-      ],
-    };
-
     const user = await em.findOne(User, { username: options.username });
-    if (!user) return errorMsg;
+
+    if (!user) {
+      return {
+        errors: [
+          {
+            field: "username",
+            message: "Invalid username",
+          },
+        ],
+      };
+    }
 
     const validPassword = await argon2.verify(user.password, options.password);
-    if (!validPassword) return errorMsg;
+
+    if (!validPassword) {
+      return {
+        errors: [
+          {
+            field: "password",
+            message: "wrong password",
+          },
+        ],
+      };
+    }
 
     req.session.userId = user.id;
 
