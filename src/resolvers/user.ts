@@ -54,19 +54,29 @@ export class UserResolver {
   @Mutation(() => UserResponse)
   async register(
     @Arg("options") options: UsernameAndPassword,
-    @Ctx() { em }: MyContext
+    @Ctx() { em, req }: MyContext
   ): Promise<UserResponse> {
     const { username, password } = options;
+    let errors: FieldError[] | null = [];
 
-    if (username.length <= 2 || password.length <= 2) {
-      return {
-        errors: [
-          {
-            field: "username/password",
-            message: "username and password should be greater than 2.",
-          },
-        ],
-      };
+    if (username.length <= 2) {
+      errors.push({
+        field: "username",
+        message: "username should be greater than 2.",
+      });
+    }
+
+    if (password.length <= 3) {
+      errors.push({
+        field: "password",
+        message: "password should be greater than 3.",
+      });
+    }
+
+    if (errors.length > 0) {
+      return { errors };
+    } else {
+      errors = null;
     }
 
     const hashedPassword = await argon2.hash(password);
@@ -88,6 +98,8 @@ export class UserResolver {
         };
       }
     }
+
+    req.session.userId = user.id;
 
     return { user };
   }
