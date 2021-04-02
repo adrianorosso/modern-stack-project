@@ -3,7 +3,6 @@ import {
   Resolver,
   Ctx,
   Mutation,
-  InputType,
   Field,
   Arg,
   ObjectType,
@@ -12,22 +11,9 @@ import {
 import { MyContext } from "../types";
 import argon2 from "argon2";
 import { COOKIE_NAME } from "../constants";
-
-@InputType()
-class UsernameAndPassword {
-  @Field()
-  username: string;
-  @Field()
-  password: string;
-}
-
-@ObjectType()
-class FieldError {
-  @Field(() => String, { nullable: true })
-  field: string;
-  @Field(() => String, { nullable: true })
-  message: string;
-}
+import { UsernameAndPassword } from "../utils/UsernameAndPassword";
+import { FieldError } from "../utils/FieldError";
+import { validateRegister } from "../utils/validateRegister";
 
 @ObjectType()
 class UserResponse {
@@ -57,32 +43,15 @@ export class UserResolver {
     @Arg("options") options: UsernameAndPassword,
     @Ctx() { em, req }: MyContext
   ): Promise<UserResponse> {
-    const { username, password } = options;
-    let errors: FieldError[] | null = [];
+    const { email, username, password } = options;
 
-    if (username.length <= 2) {
-      errors.push({
-        field: "username",
-        message: "username should be greater than 2.",
-      });
-    }
-
-    if (password.length <= 3) {
-      errors.push({
-        field: "password",
-        message: "password should be greater than 3.",
-      });
-    }
-
-    if (errors.length > 0) {
-      return { errors };
-    } else {
-      errors = null;
-    }
+    const errors = validateRegister(email, username, password);
+    if (errors) return { errors };
 
     const hashedPassword = await argon2.hash(password);
     const user = em.create(User, {
-      username: username,
+      email,
+      username,
       password: hashedPassword,
     });
     try {
@@ -107,23 +76,29 @@ export class UserResolver {
 
   @Mutation(() => UserResponse)
   async login(
-    @Arg("options") options: UsernameAndPassword,
+    @Arg("usernameOrEmail") usernameOrEmail: string,
+    @Arg("password") password: string,
     @Ctx() { em, req }: MyContext
   ): Promise<UserResponse> {
-    const user = await em.findOne(User, { username: options.username });
+    const user = await em.findOne(
+      User,
+      usernameOrEmail.includes("@")
+        ? { email: usernameOrEmail }
+        : { username: usernameOrEmail }
+    );
 
     if (!user) {
       return {
         errors: [
           {
-            field: "username",
-            message: "Invalid username",
+            field: "usernameOrEmail",
+            message: "Invalid usernameOrEmail",
           },
         ],
       };
     }
 
-    const validPassword = await argon2.verify(user.password, options.password);
+    const validPassword = await argon2.verify(user.password, password);
 
     if (!validPassword) {
       return {

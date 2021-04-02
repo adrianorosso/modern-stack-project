@@ -4,7 +4,6 @@ import { ObjectType, Field } from "type-graphql";
 @ObjectType()
 @Entity()
 export class User {
-
   @Field()
   @PrimaryKey()
   id!: number;
@@ -14,14 +13,18 @@ export class User {
   createdAt: Date = new Date();
 
   @Field()
-  @Property({type: Date , onUpdate: () => new Date() })
+  @Property({ type: Date, onUpdate: () => new Date() })
   updatedAt: Date = new Date();
 
   @Field()
-  @Property({type: 'text', unique: true})
+  @Property({ type: "text", unique: true })
   username!: string;
 
   @Field()
-  @Property({type: 'text'})
+  @Property({ type: "text" })
   password!: string;
+
+  @Field()
+  @Property({ type: "text", unique: true })
+  email!: string;
 }
