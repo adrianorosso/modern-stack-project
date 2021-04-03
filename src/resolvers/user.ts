@@ -164,7 +164,7 @@ export class UserResolver {
   async changePassword(
     @Arg("newPassword") newPassword: string,
     @Arg("token") token: string,
-    @Ctx() { em, redis, req }: MyContext
+    @Ctx() { em, redis }: MyContext
   ): Promise<UserResponse> {
     if (newPassword.length <= 3) {
       return {
@@ -212,7 +212,7 @@ export class UserResolver {
     await redis.del(key);
 
     // log in the user after changing password
-    req.session.id = user.id;
+    // req.session.id = userId;
 
     return { user };
   }
