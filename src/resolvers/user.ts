@@ -10,10 +10,12 @@ import {
 } from "type-graphql";
 import { MyContext } from "../types";
 import argon2 from "argon2";
-import { COOKIE_NAME } from "../constants";
+import { COOKIE_NAME, FORGET_PASSWORD_PREFIX } from "../constants";
 import { UsernameAndPassword } from "../utils/UsernameAndPassword";
 import { FieldError } from "../utils/FieldError";
 import { validateRegister } from "../utils/validateRegister";
+import { sendMail } from "../utils/sendEmail";
+import { v4 } from "uuid";
 
 @ObjectType()
 class UserResponse {
@@ -129,5 +131,32 @@ export class UserResolver {
         return resolve(true);
       });
     });
+  }
+
+  @Mutation(() => Boolean)
+  async forgotPassword(
+    @Ctx() { em, redis }: MyContext,
+    @Arg("email") email: string
+  ) {
+    const user = await em.findOne(User, { email: email });
+
+    // Email does not exist, but won't tell the user for security reasons
+    if (!user) return true;
+
+    const token = v4();
+
+    redis.set(
+      FORGET_PASSWORD_PREFIX + token,
+      user.id,
+      "ex",
+      1000 * 60 * 60 + 24 + 3
+    ); // 3 days
+
+    await sendMail(
+      email,
+      `<a href="http://localhost:3000/change-password/${token}">Change password</a>`
+    );
+
+    return true;
   }
 }
