@@ -12,13 +12,12 @@ import Redis from "ioredis";
 import session from "express-session";
 import { MyContext } from "./types";
 import cors from "cors";
-import { sendMail } from "./utils/sendEmail";
 
 const main = async () => {
   const orm = await MikroORM.init(microConfig);
   await orm.getMigrator().up();
 
-  sendMail("bacon@bacon.com.br", "hello there");
+  // sendMail("bacon@bacon.com.br", "hello there");
 
   const app = express();
 
