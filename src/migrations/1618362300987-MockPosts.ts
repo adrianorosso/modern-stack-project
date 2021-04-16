@@ -1,4 +1,9 @@
-insert into post (title, text, "creatorId", "createdAt") values ('P.S.', 'Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Vivamus vestibulum sagittis sapien. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.
+import { MigrationInterface, QueryRunner } from "typeorm";
+
+export class MockPosts1618362300987 implements MigrationInterface {
+  public async up(queryRunner: QueryRunner): Promise<void> {
+    queryRunner.query(`
+        insert into post (title, text, "creatorId", "createdAt") values ('P.S.', 'Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Vivamus vestibulum sagittis sapien. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.
 
 Etiam vel augue. Vestibulum rutrum rutrum neque. Aenean auctor gravida sem.', 1, '2021-02-22T14:22:07Z');
 insert into post (title, text, "creatorId", "createdAt") values ('Un Poliziotto Scomodo', 'Vestibulum quam sapien, varius ut, blandit non, interdum in, ante. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Duis faucibus accumsan odio. Curabitur convallis.', 1, '2020-12-27T19:04:47Z');
@@ -210,3 +215,9 @@ insert into post (title, text, "creatorId", "createdAt") values ('Tiger and the 
 
 Nullam sit amet turpis elementum ligula vehicula consequat. Morbi a ipsum. Integer a nibh.', 1, '2021-02-12T07:59:15Z');
 insert into post (title, text, "creatorId", "createdAt") values ('Collector, The', 'In hac habitasse platea dictumst. Etiam faucibus cursus urna. Ut tellus.', 1, '2020-08-30T23:25:41Z');
+
+        `);
+  }
+
+  public async down(_: QueryRunner): Promise<void> {}
+}
