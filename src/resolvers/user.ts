@@ -7,6 +7,8 @@ import {
   Arg,
   ObjectType,
   Query,
+  FieldResolver,
+  Root,
 } from "type-graphql";
 import { MyContext } from "../types";
 import argon2 from "argon2";
@@ -27,8 +29,17 @@ class UserResponse {
   user?: User;
 }
 
-@Resolver()
+@Resolver(User)
 export class UserResolver {
+  @FieldResolver(() => String)
+  email(@Root() user: User, @Ctx() { req }: MyContext) {
+    if (req.session.userId === user.id) {
+      return user.email;
+    }
+
+    return "";
+  }
+
   @Query(() => User, { nullable: true })
   me(@Ctx() { req }: MyContext) {
     if (!req.session.userId) {
@@ -120,6 +131,8 @@ export class UserResolver {
     }
 
     req.session.userId = user.id;
+
+    console.log(`#### ${JSON.stringify(req.session)}`);
 
     return { user };
   }
