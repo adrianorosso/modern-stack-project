@@ -12,12 +12,12 @@ export class Updoot extends BaseEntity {
   @PrimaryColumn()
   userId: number;
 
-  @ManyToOne(() => User)
+  @ManyToOne(() => User, { onDelete: "CASCADE" })
   user: User;
 
   @PrimaryColumn()
   postId: number;
 
-  @ManyToOne(() => Post)
+  @ManyToOne(() => Post, { onDelete: "CASCADE" })
   post: Post;
 }
