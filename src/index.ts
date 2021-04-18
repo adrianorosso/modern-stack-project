@@ -1,4 +1,5 @@
 import "reflect-metadata";
+import "dotenv-safe/config";
 import { COOKIE_NAME, __prod__ } from "./constants";
 import express from "express";
 import { ApolloServer } from "apollo-server-express";
@@ -22,9 +23,7 @@ import { createUpdootLoader } from "./utils/createUpdootLoader";
 const main = async () => {
   const conn = await createConnection({
     type: "postgres",
-    username: "postgres",
-    password: "postgres",
-    database: "lireddit",
+    url: process.env.DATABASE_URL,
     synchronize: true,
     logging: true,
     migrations: [path.join(__dirname, "./migrations/*")],
@@ -38,11 +37,11 @@ const main = async () => {
   const app = express();
 
   const RedisStore = connectRedis(session);
-  const redis = new Redis();
+  const redis = new Redis(process.env.REDIS_URL);
 
   app.use(
     cors({
-      origin: "http://localhost:3000",
+      origin: process.env.CORS_ORIGIN,
       credentials: true,
     })
   );
@@ -58,7 +57,7 @@ const main = async () => {
         sameSite: "lax",
       },
       saveUninitialized: false,
-      secret: "ahegiasiufahnsin",
+      secret: process.env.SESSION_SECRET,
       resave: false,
     })
   );
@@ -79,7 +78,7 @@ const main = async () => {
 
   apolloServer.applyMiddleware({ app, cors: false });
 
-  app.listen(4000, () => {
+  app.listen(parseInt(process.env.PORT), () => {
     console.log("Server listening on port: 4000");
   });
 };
